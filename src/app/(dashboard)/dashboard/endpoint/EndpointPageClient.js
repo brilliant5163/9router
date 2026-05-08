@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Card, Button, Input, Modal, CardSkeleton, Toggle } from "@/shared/components";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
+import { APP_CONFIG } from "@/shared/constants/config";
 
 const TUNNEL_BENEFITS = [
   { icon: "public", title: "Access Anywhere", desc: "Use your API from any network" },
@@ -1111,7 +1112,7 @@ export default function APIPageClient({ machineId }) {
                   Cloudflare Tunnel
                 </p>
                 <p className="text-sm text-text-muted">
-                  Expose your local 9Router to the internet. No port forwarding, no static IP needed. Share endpoint URL with your team or use it in Cursor, Cline, and other AI tools from anywhere.
+                  Expose your local {APP_CONFIG.displayName} to the internet. No port forwarding, no static IP needed. Share endpoint URL with your team or use it in Cursor, Cline, and other AI tools from anywhere.
                 </p>
               </div>
             </div>

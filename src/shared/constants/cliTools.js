@@ -33,6 +33,22 @@ export const MITM_TOOLS = {
       { id: "claude-haiku-4.5", name: "Claude Haiku 4.5", alias: "claude-haiku-4.5" },
     ],
   },
+  openrouter: {
+    id: "openrouter",
+    name: "OpenRouter",
+    image: "/providers/openrouter.png",
+    color: "#111827",
+    description: "OpenRouter-compatible tools with MITM",
+    configType: "mitm",
+    mitmDomain: "openrouter.ai",
+    defaultModels: [
+      { id: "openai/gpt-4o-mini", name: "GPT-4o Mini", alias: "openai/gpt-4o-mini" },
+      { id: "openai/gpt-4o", name: "GPT-4o", alias: "openai/gpt-4o" },
+      { id: "anthropic/claude-sonnet-4.5", name: "Claude Sonnet 4.5", alias: "anthropic/claude-sonnet-4.5" },
+      { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro", alias: "google/gemini-2.5-pro" },
+      { id: "deepseek/deepseek-chat-v3.1", name: "DeepSeek Chat V3.1", alias: "deepseek/deepseek-chat-v3.1" },
+    ],
+  },
   kiro: {
     id: "kiro",
     name: "Kiro",
@@ -262,4 +278,3 @@ export const getProviderModelsForMapping = (providers) => {
   });
   return result;
 };
-

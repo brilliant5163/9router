@@ -1,9 +1,26 @@
 {
-  "name": "9router-app",
+  "name": "9routerx",
   "version": "0.4.20",
-  "description": "9Router web dashboard",
-  "private": true,
+  "description": "9RouterX web dashboard and CLI",
+  "private": false,
+  "bin": {
+    "9routerx": "./bin/cli.js"
+  },
+  "files": [
+    "bin",
+    ".next/standalone",
+    "!.next/standalone/.env",
+    ".next/static",
+    "public",
+    "src/mitm",
+    "src/shared/constants/brand.cjs",
+    "src/lib/updater/updater.js",
+    "open-sse",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
+    "cli": "node ./bin/cli.js --no-open",
     "dev": "next dev --webpack --port 20128",
     "build": "NODE_ENV=production next build --webpack",
     "start": "NODE_ENV=production next start",

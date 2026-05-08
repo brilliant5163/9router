@@ -388,13 +388,34 @@ async function getMitmStatus() {
     } catch { /* ignore */ }
   }
 
+  const health = await pollMitmHealth(800, MITM_PORT);
+  const healthOk = health?.ok === true;
+  if (healthOk) {
+    running = true;
+    pid = health.pid || pid;
+  }
+
   const dnsStatus = checkAllDNSStatus();
   const rootCACertPath = path.join(MITM_DIR, "rootCA.crt");
   const certExists = fs.existsSync(rootCACertPath);
   const { checkCertInstalled } = require("./cert/install");
   const certTrusted = certExists ? await checkCertInstalled(rootCACertPath) : false;
 
-  return { running, pid, certExists, certTrusted, dnsStatus };
+  return {
+    running,
+    pid,
+    certExists,
+    certTrusted,
+    dnsStatus,
+    health: {
+      ok: healthOk,
+      pid: health?.pid || null,
+      path: "/_mitm_health",
+      port: MITM_PORT,
+      checkedAt: new Date().toISOString(),
+      stale: running && !healthOk,
+    },
+  };
 }
 
 async function scheduleMitmRestart(apiKey) {

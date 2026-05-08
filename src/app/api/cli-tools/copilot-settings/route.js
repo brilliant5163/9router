@@ -79,7 +79,7 @@ export async function POST(request) {
     } catch { /* No existing config */ }
 
     const endpointUrl = `${baseUrl}/chat/completions#models.ai.azure.com`;
-    const keyToUse = apiKey || "sk_9router";
+    const keyToUse = apiKey || "sk_9routerx";
 
     const newEntry = {
       name: "9Router",

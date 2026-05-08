@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, Button, Input } from "@/shared/components";
 import { useRouter } from "next/navigation";
+import { APP_CONFIG } from "@/shared/constants/config";
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");
@@ -87,7 +88,7 @@ export default function LoginPage() {
       <div className="landing-grid absolute inset-0 pointer-events-none" aria-hidden="true" />
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">9Router</h1>
+          <h1 className="text-3xl font-bold text-primary mb-2">{APP_CONFIG.displayName}</h1>
           <p className="text-text-muted">Enter your password to access the dashboard</p>
         </div>
 

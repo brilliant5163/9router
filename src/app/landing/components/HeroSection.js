@@ -1,4 +1,5 @@
 "use client";
+import { GITHUB_CONFIG } from "@/shared/constants/config";
 
 export default function HeroSection() {
   return (
@@ -31,7 +32,7 @@ export default function HeroSection() {
             Get Started
           </button>
           <a 
-            href="https://github.com/decolua/9router" 
+            href={`https://github.com/${GITHUB_CONFIG.repo}`}
             target="_blank" 
             rel="noopener noreferrer"
             className="h-12 px-8 rounded-lg border border-[#3a2f27] bg-[#23180f] hover:bg-[#3a2f27] text-white text-base font-bold transition-all flex items-center gap-2"
@@ -44,4 +45,3 @@ export default function HeroSection() {
     </section>
   );
 }
-

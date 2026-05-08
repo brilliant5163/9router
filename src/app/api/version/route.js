@@ -1,7 +1,8 @@
 import https from "https";
 import pkg from "../../../../package.json" with { type: "json" };
+import { UPDATER_CONFIG } from "@/shared/constants/config";
 
-const NPM_PACKAGE_NAME = "9router";
+const NPM_PACKAGE_NAME = UPDATER_CONFIG.npmPackageName;
 
 // Fetch latest version from npm registry
 function fetchLatestVersion() {

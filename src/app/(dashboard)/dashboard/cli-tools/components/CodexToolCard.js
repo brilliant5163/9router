@@ -98,10 +98,10 @@ export default function CodexToolCard({ tool, isExpanded, onToggle, baseUrl, api
     setApplying(true);
     setMessage(null);
     try {
-      // Use sk_9router for localhost if no key, otherwise use selected key
+      // Use sk_9routerx for localhost if no key, otherwise use selected key
       const keyToUse = (selectedApiKey && selectedApiKey.trim())
         ? selectedApiKey
-        : (!cloudEnabled ? "sk_9router" : selectedApiKey);
+        : (!cloudEnabled ? "sk_9routerx" : selectedApiKey);
 
       const res = await fetch("/api/cli-tools/codex-settings", {
         method: "POST",
@@ -160,7 +160,7 @@ export default function CodexToolCard({ tool, isExpanded, onToggle, baseUrl, api
   const getManualConfigs = () => {
     const keyToUse = (selectedApiKey && selectedApiKey.trim())
       ? selectedApiKey
-      : (!cloudEnabled ? "sk_9router" : "<API_KEY_FROM_DASHBOARD>");
+      : (!cloudEnabled ? "sk_9routerx" : "<API_KEY_FROM_DASHBOARD>");
 
     const effectiveSubagentModel = subagentModel || selectedModel;
 
@@ -309,7 +309,7 @@ model = "${effectiveSubagentModel}"
                     </select>
                   ) : (
                     <span className="min-w-0 rounded bg-surface/40 px-2 py-2 text-xs text-text-muted sm:py-1.5">
-                      {cloudEnabled ? "No API keys - Create one in Keys page" : "sk_9router (default)"}
+                      {cloudEnabled ? "No API keys - Create one in Keys page" : "sk_9routerx (default)"}
                     </span>
                   )}
                 </div>

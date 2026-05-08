@@ -146,10 +146,10 @@ export default function ClaudeToolCard({
     try {
       const env = { ANTHROPIC_BASE_URL: getEffectiveBaseUrl() };
 
-      // Get key from dropdown, fallback to first key or sk_9router for localhost
+      // Get key from dropdown, fallback to first key or sk_9routerx for localhost
       const keyToUse = selectedApiKey?.trim()
         || (apiKeys?.length > 0 ? apiKeys[0].key : null)
-        || (!cloudEnabled ? "sk_9router" : null);
+        || (!cloudEnabled ? "sk_9routerx" : null);
 
       if (keyToUse) {
         env.ANTHROPIC_AUTH_TOKEN = keyToUse;
@@ -211,7 +211,7 @@ export default function ClaudeToolCard({
   const getManualConfigs = () => {
     const keyToUse = (selectedApiKey && selectedApiKey.trim())
       ? selectedApiKey
-      : (!cloudEnabled ? "sk_9router" : "<API_KEY_FROM_DASHBOARD>");
+      : (!cloudEnabled ? "sk_9routerx" : "<API_KEY_FROM_DASHBOARD>");
     const env = { ANTHROPIC_BASE_URL: getEffectiveBaseUrl(), ANTHROPIC_AUTH_TOKEN: keyToUse };
     tool.defaultModels.forEach((model) => {
       const targetModel = modelMappings[model.alias];
@@ -331,7 +331,7 @@ export default function ClaudeToolCard({
                     </select>
                   ) : (
                     <span className="min-w-0 rounded bg-surface/40 px-2 py-2 text-xs text-text-muted sm:py-1.5">
-                      {cloudEnabled ? "No API keys - Create one in Keys page" : "sk_9router (default)"}
+                      {cloudEnabled ? "No API keys - Create one in Keys page" : "sk_9routerx (default)"}
                     </span>
                   )}
                 </div>

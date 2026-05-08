@@ -30,6 +30,7 @@ function loadHandler(name) {
 const handlers = {
   antigravity: loadHandler("antigravity"),
   copilot: loadHandler("copilot"),
+  openrouter: loadHandler("openrouter"),
   kiro: loadHandler("kiro"),
   cursor: loadHandler("cursor"),
 };
@@ -208,6 +209,9 @@ const server = https.createServer(sslOptions, async (req, res) => {
 
     const model = extractModel(req.url, bodyBuffer);
     const mappedModel = getMappedModel(tool, model);
+    if (tool === "openrouter") {
+      return handlers[tool].intercept(req, res, bodyBuffer, mappedModel, passthrough);
+    }
     if (!mappedModel) {
       return passthrough(req, res, bodyBuffer);
     }

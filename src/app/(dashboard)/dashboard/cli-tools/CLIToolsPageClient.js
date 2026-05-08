@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardSkeleton } from "@/shared/components";
+import { APP_CONFIG } from "@/shared/constants/config";
 import { CLI_TOOLS } from "@/shared/constants/cliTools";
 import { getModelsByProviderId, PROVIDER_ID_TO_ALIAS } from "@/shared/constants/models";
 import { ClaudeToolCard, CodexToolCard, DroidToolCard, OpenClawToolCard, HermesToolCard, DefaultToolCard, OpenCodeToolCard, CoworkToolCard, MitmLinkCard } from "./components";
@@ -219,7 +220,7 @@ export default function CLIToolsPageClient({ machineId }) {
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-1 sm:px-0">
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold text-text-main sm:text-2xl">CLI Tools</h1>
-        <p className="text-sm text-text-muted">Configure local coding tools to use your 9Router providers.</p>
+        <p className="text-sm text-text-muted">Configure local coding tools to use your {APP_CONFIG.displayName} providers.</p>
       </div>
       <div className="grid gap-3 sm:gap-4">
         {regularTools.map(([toolId, tool]) => renderToolCard(toolId, tool))}

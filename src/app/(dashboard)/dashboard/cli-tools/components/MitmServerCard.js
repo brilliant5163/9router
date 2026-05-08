@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Card, Button, Badge, Input } from "@/shared/components";
+import { APP_CONFIG } from "@/shared/constants/config";
 
 const DEFAULT_MITM_ROUTER_BASE = "http://localhost:20128";
 
@@ -76,7 +77,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
       } else if (action === "start") {
         const keyToUse = selectedApiKey?.trim()
           || (apiKeys?.length > 0 ? apiKeys[0].key : null)
-          || (!cloudEnabled ? "sk_9router" : null);
+          || (!cloudEnabled ? "sk_9routerx" : null);
         res = await fetch("/api/cli-tools/antigravity-mitm", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -130,6 +131,10 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
   };
 
   const isRunning = status?.running;
+  const healthOk = status?.health?.ok === true;
+  const healthStale = status?.health?.stale === true;
+  const serverUsable = isRunning && healthOk;
+  const healthLabel = !status ? "Checking" : healthOk ? "Healthy" : healthStale ? "Stale" : "Down";
 
   return (
     <>
@@ -140,8 +145,10 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">security</span>
               <span className="font-semibold text-sm text-text-main">MITM Server</span>
-              {isRunning ? (
+              {serverUsable ? (
                 <Badge variant="success" size="sm">Running</Badge>
+              ) : healthStale ? (
+                <Badge variant="warning" size="sm">Stale</Badge>
               ) : (
                 <Badge variant="default" size="sm">Stopped</Badge>
               )}
@@ -151,6 +158,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
                 { label: "Cert", ok: status?.certExists },
                 { label: "Trusted", ok: status?.certTrusted },
                 { label: "Server", ok: isRunning },
+                { label: "Health", ok: healthOk },
               ].map(({ label, ok }) => (
                 <span key={label} className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded ${ok ? "text-green-600" : "text-text-muted"}`}>
                   <span className="material-symbols-outlined text-[12px]">
@@ -162,20 +170,45 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
             </div>
           </div>
 
+          <div className={`rounded-md border px-2 py-1.5 text-[11px] ${
+            healthOk
+              ? "border-green-500/20 bg-green-500/5 text-green-700"
+              : healthStale
+                ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-700"
+                : "border-border bg-surface/50 text-text-muted"
+          }`} data-i18n-skip="true">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="flex items-center gap-1">
+                <span className="material-symbols-outlined text-[13px]">
+                  {healthOk ? "check_circle" : healthStale ? "warning" : "cancel"}
+                </span>
+                Health: {healthLabel}
+              </span>
+              <span>Endpoint: https://openrouter.ai/_mitm_health</span>
+              {status?.health?.pid && <span>Health PID: {status.health.pid}</span>}
+              {status?.pid && <span>Tracked PID: {status.pid}</span>}
+            </div>
+            {healthStale && (
+              <div className="mt-1 text-[10px]">
+                DNS or PID state may still be active, but the MITM health endpoint is not reachable. Restart the server.
+              </div>
+            )}
+          </div>
+
           {/* Purpose & How it works */}
           <div className="px-2 py-2 rounded-lg bg-surface/50 border border-border/50 flex flex-col gap-2">
             <p className="text-[11px] text-text-muted leading-relaxed">
-              <span className="font-medium text-text-main">Purpose:</span> Use Antigravity IDE & GitHub Copilot → with ANY provider/model from 9Router
+              <span className="font-medium text-text-main">Purpose:</span> Use Antigravity IDE & GitHub Copilot with any provider/model from {APP_CONFIG.displayName}
             </p>
             <p className="text-[11px] text-text-muted leading-relaxed">
-              <span className="font-medium text-text-main">How it works:</span> Antigravity/Copilot IDE request → DNS redirect to localhost:443 → MITM proxy intercepts → 9Router → response to Antigravity/Copilot
+              <span className="font-medium text-text-main">How it works:</span> Antigravity/Copilot IDE request to localhost:443, MITM intercepts, {APP_CONFIG.displayName} routes, then returns the response.
             </p>
           </div>
 
           {/* Base URL + API Key — same row pattern as Claude Code / cli-tools */}
           <div className="flex flex-col gap-2">
             <div className="grid gap-1 sm:grid-cols-[8rem_auto_1fr] sm:items-center sm:gap-2">
-              <span className="text-xs font-semibold text-text-main sm:text-right sm:text-sm">9Router Base URL</span>
+              <span className="text-xs font-semibold text-text-main sm:text-right sm:text-sm">{APP_CONFIG.displayName} Base URL</span>
               <span className="material-symbols-outlined hidden text-text-muted text-[14px] sm:inline">arrow_forward</span>
               <input
                 type="text"
@@ -195,7 +228,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
                   list="mitm-api-keys"
                   value={selectedApiKey}
                   onChange={(e) => setSelectedApiKey(e.target.value)}
-                  placeholder={cloudEnabled ? "Enter or pick API key" : "sk_9router (default)"}
+                  placeholder={cloudEnabled ? "Enter or pick API key" : "sk_9routerx (default)"}
                   className="flex-1 min-w-0 px-2 py-1.5 bg-surface rounded border border-border text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/50"
                 />
                 {apiKeys?.length > 0 && (
@@ -258,7 +291,7 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
           {serverIsWindows && !isAdmin && (
             <div className="flex items-center gap-2 px-2 py-1.5 rounded text-xs bg-red-500/10 text-red-600 border border-red-500/20">
               <span className="material-symbols-outlined text-[14px]">shield_lock</span>
-              <span>Administrator required — restart 9Router as Administrator to use MITM</span>
+              <span>Administrator required - restart {APP_CONFIG.displayName} as Administrator to use MITM</span>
             </div>
           )}
         </div>

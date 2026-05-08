@@ -1,7 +1,8 @@
 import path from "path";
 import os from "os";
+import { BRAND } from "@/shared/constants/brand.js";
 
-const APP_NAME = "9router";
+const APP_NAME = BRAND.defaultDataDirName;
 
 export function getDataDir() {
   if (process.env.DATA_DIR) return process.env.DATA_DIR;

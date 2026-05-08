@@ -1,21 +1,24 @@
 import pkg from "../../../package.json" with { type: "json" };
+import { BRAND } from "./brand.js";
 
 // App configuration
 export const APP_CONFIG = {
-  name: "9Router proxy",
-  description: "AI Infrastructure Management",
+  name: BRAND.appName,
+  displayName: BRAND.displayName,
+  description: BRAND.description,
   version: pkg.version,
 };
 
 // GitHub configuration
 export const GITHUB_CONFIG = {
-  changelogUrl: "https://raw.githubusercontent.com/decolua/9router/refs/heads/master/CHANGELOG.md",
+  repo: BRAND.githubRepo,
+  changelogUrl: `https://raw.githubusercontent.com/${BRAND.githubRepo}/refs/heads/master/CHANGELOG.md`,
 };
 
 // Updater configuration
 export const UPDATER_CONFIG = {
-  npmPackageName: "9router",
-  installCmd: "npm i -g 9router",
+  npmPackageName: BRAND.npmPackageName,
+  installCmd: BRAND.installCmd,
   exitDelayMs: 500,
   statusPort: 20129,
   statusPollIntervalMs: 1000,

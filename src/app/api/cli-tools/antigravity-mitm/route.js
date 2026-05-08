@@ -13,6 +13,7 @@ import {
   initDbHooks,
 } from "@/mitm/manager";
 import { getSettings, updateSettings } from "@/lib/localDb";
+import { APP_CONFIG } from "@/shared/constants/config";
 
 initDbHooks(getSettings, updateSettings);
 
@@ -75,6 +76,7 @@ export async function GET() {
       pid: status.pid || null,
       certExists: status.certExists || false,
       certTrusted: status.certTrusted || false,
+      health: status.health || null,
       dnsStatus: status.dnsStatus || {},
       hasCachedPassword,
       isWin,
@@ -105,7 +107,7 @@ export async function POST(request) {
 
     if (!checkPrivilege(pwd)) {
       return NextResponse.json(
-        { error: isWin ? "Administrator required — restart 9Router as Administrator" : "Root or sudo password required to start MITM" },
+        { error: isWin ? `Administrator required - restart ${APP_CONFIG.displayName} as Administrator` : "Root or sudo password required to start MITM" },
         { status: 403 }
       );
     }
@@ -173,7 +175,7 @@ export async function PATCH(request) {
     }
     if (!checkPrivilege(pwd)) {
       return NextResponse.json(
-        { error: isWin ? "Administrator required — restart 9Router as Administrator" : "Root or sudo password required to modify DNS" },
+        { error: isWin ? `Administrator required - restart ${APP_CONFIG.displayName} as Administrator` : "Root or sudo password required to modify DNS" },
         { status: 403 }
       );
     }

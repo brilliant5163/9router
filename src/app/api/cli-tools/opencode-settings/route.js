@@ -106,7 +106,7 @@ export async function POST(request) {
     } catch { /* No existing config */ }
 
     const normalizedBaseUrl = baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`;
-    const keyToUse = apiKey || "sk_9router";
+    const keyToUse = apiKey || "sk_9routerx";
     const effectiveSubagentModel = subagentModel || modelsArray[0];
 
     // Ensure provider object

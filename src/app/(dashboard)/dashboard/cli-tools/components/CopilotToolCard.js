@@ -102,7 +102,7 @@ export default function CopilotToolCard({ tool, isExpanded, onToggle, baseUrl, a
     try {
       const keyToUse = (selectedApiKey && selectedApiKey.trim())
         ? selectedApiKey
-        : (!cloudEnabled ? "sk_9router" : selectedApiKey);
+        : (!cloudEnabled ? "sk_9routerx" : selectedApiKey);
 
       const res = await fetch("/api/cli-tools/copilot-settings", {
         method: "POST",
@@ -146,7 +146,7 @@ export default function CopilotToolCard({ tool, isExpanded, onToggle, baseUrl, a
   const getManualConfigs = () => {
     const keyToUse = (selectedApiKey && selectedApiKey.trim())
       ? selectedApiKey
-      : (!cloudEnabled ? "sk_9router" : "<API_KEY_FROM_DASHBOARD>");
+      : (!cloudEnabled ? "sk_9routerx" : "<API_KEY_FROM_DASHBOARD>");
     const effectiveBaseUrl = getEffectiveBaseUrl();
 
     return [{
@@ -229,7 +229,7 @@ export default function CopilotToolCard({ tool, isExpanded, onToggle, baseUrl, a
                     </select>
                   ) : (
                     <span className="text-sm text-text-muted">
-                      {cloudEnabled ? "No API keys - Create one in Keys page" : "sk_9router (default)"}
+                      {cloudEnabled ? "No API keys - Create one in Keys page" : "sk_9routerx (default)"}
                     </span>
                   )}
                 </div>

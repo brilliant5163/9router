@@ -27,5 +27,5 @@ tsconfig.json
 
 # Build artifacts that shouldn't be published
 .next/cache/
+.next/standalone/.env
 .next/standalone/data/
-

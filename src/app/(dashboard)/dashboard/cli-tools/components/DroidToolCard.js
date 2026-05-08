@@ -141,7 +141,7 @@ export default function DroidToolCard({
     try {
       const keyToUse = selectedApiKey?.trim()
         || (apiKeys?.length > 0 ? apiKeys[0].key : null)
-        || (!cloudEnabled ? "sk_9router" : null);
+        || (!cloudEnabled ? "sk_9routerx" : null);
 
       const res = await fetch("/api/cli-tools/droid-settings", {
         method: "POST",
@@ -190,7 +190,7 @@ export default function DroidToolCard({
   const getManualConfigs = () => {
     const keyToUse = (selectedApiKey && selectedApiKey.trim())
       ? selectedApiKey
-      : (!cloudEnabled ? "sk_9router" : "<API_KEY_FROM_DASHBOARD>");
+      : (!cloudEnabled ? "sk_9routerx" : "<API_KEY_FROM_DASHBOARD>");
 
     const settingsContent = {
       customModels: modelList.map((m, i) => ({
@@ -325,7 +325,7 @@ export default function DroidToolCard({
                     </select>
                   ) : (
                     <span className="min-w-0 rounded bg-surface/40 px-2 py-2 text-xs text-text-muted sm:py-1.5">
-                      {cloudEnabled ? "No API keys - Create one in Keys page" : "sk_9router (default)"}
+                      {cloudEnabled ? "No API keys - Create one in Keys page" : "sk_9routerx (default)"}
                     </span>
                   )}
                 </div>

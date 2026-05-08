@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const forge = require("node-forge");
 const { MITM_DIR } = require("../paths");
+const { BRAND } = require("../../shared/constants/brand.cjs");
 
 const ROOT_CA_KEY_PATH = path.join(MITM_DIR, "rootCA.key");
 const ROOT_CA_CERT_PATH = path.join(MITM_DIR, "rootCA.crt");
@@ -53,8 +54,8 @@ async function generateRootCA() {
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10);
 
   const attrs = [
-    { name: "commonName", value: "9Router MITM Root CA" },
-    { name: "organizationName", value: "9Router" },
+    { name: "commonName", value: BRAND.mitmRootCACommonName },
+    { name: "organizationName", value: BRAND.mitmRootCAOrganization },
     { name: "countryName", value: "US" }
   ];
 

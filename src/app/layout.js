@@ -5,6 +5,7 @@ import "@/lib/initCloudSync"; // Auto-initialize cloud sync
 import "@/lib/network/initOutboundProxy"; // Auto-initialize outbound proxy env
 import { initConsoleLogCapture } from "@/lib/consoleLogBuffer";
 import { RuntimeI18nProvider } from "@/i18n/RuntimeI18nProvider";
+import { APP_CONFIG } from "@/shared/constants/config";
 
 // Hook console immediately at module load time (server-side only, runs once)
 initConsoleLogCapture();
@@ -15,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "9Router - AI Infrastructure Management",
+  title: `${APP_CONFIG.displayName} - ${APP_CONFIG.description}`,
   description: "One endpoint for all your AI providers. Manage keys, monitor usage, and scale effortlessly.",
   icons: {
     icon: "/favicon.svg",

@@ -5,6 +5,7 @@ const os = require("os");
 const { log, err } = require("../logger");
 const { TOOL_HOSTS } = require("../../shared/constants/mitmToolHosts.js");
 const { runElevatedPowerShell, isAdmin } = require("../winElevated.js");
+const { BRAND } = require("../../shared/constants/brand.cjs");
 
 /**
  * Atomic-ish write for Windows hosts file with rollback on failure.
@@ -12,8 +13,8 @@ const { runElevatedPowerShell, isAdmin } = require("../winElevated.js");
  * If anything fails mid-way, restore from `.bak`. Same-volume renames are atomic on NTFS.
  */
 function atomicWriteHostsWin(target, originalContent, newContent) {
-  const tmpNew = `${target}.9router.new`;
-  const tmpBak = `${target}.9router.bak`;
+  const tmpNew = `${target}.${BRAND.defaultDataDirName}.new`;
+  const tmpBak = `${target}.${BRAND.defaultDataDirName}.bak`;
   try {
     fs.writeFileSync(tmpNew, newContent, "utf8");
     try { fs.unlinkSync(tmpBak); } catch { /* none */ }
