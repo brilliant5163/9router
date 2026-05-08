@@ -76,7 +76,6 @@ export async function GET() {
       pid: status.pid || null,
       certExists: status.certExists || false,
       certTrusted: status.certTrusted || false,
-      health: status.health || null,
       dnsStatus: status.dnsStatus || {},
       hasCachedPassword,
       isWin,

@@ -20,12 +20,19 @@ const SOCKET_FLAG = IS_WINDOWS ? [] : ["--socket", TAILSCALE_SOCKET];
 // Well-known Windows install path
 const WINDOWS_TAILSCALE_BIN = "C:\\Program Files\\Tailscale\\tailscale.exe";
 
+function getSystemTailscaleBin() {
+  const command = IS_WINDOWS ? "where tailscale 2>nul" : "command -v tailscale 2>/dev/null";
+  try {
+    return execSync(command, { encoding: "utf8", windowsHide: true }).trim().split(/\r?\n/)[0] || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 // Prefer system tailscale, fallback to local bin, then Windows default path
 function getTailscaleBin() {
-  try {
-    const systemPath = execSync("which tailscale 2>/dev/null || where tailscale 2>nul", { encoding: "utf8", windowsHide: true }).trim();
-    if (systemPath) return systemPath;
-  } catch (e) { /* not in PATH */ }
+  const systemPath = getSystemTailscaleBin();
+  if (systemPath) return systemPath;
   if (fs.existsSync(TAILSCALE_BIN)) return TAILSCALE_BIN;
   if (IS_WINDOWS && fs.existsSync(WINDOWS_TAILSCALE_BIN)) return WINDOWS_TAILSCALE_BIN;
   return null;

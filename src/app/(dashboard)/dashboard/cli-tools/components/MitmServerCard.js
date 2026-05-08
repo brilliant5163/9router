@@ -131,10 +131,6 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
   };
 
   const isRunning = status?.running;
-  const healthOk = status?.health?.ok === true;
-  const healthStale = status?.health?.stale === true;
-  const serverUsable = isRunning && healthOk;
-  const healthLabel = !status ? "Checking" : healthOk ? "Healthy" : healthStale ? "Stale" : "Down";
 
   return (
     <>
@@ -145,10 +141,8 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">security</span>
               <span className="font-semibold text-sm text-text-main">MITM Server</span>
-              {serverUsable ? (
+              {isRunning ? (
                 <Badge variant="success" size="sm">Running</Badge>
-              ) : healthStale ? (
-                <Badge variant="warning" size="sm">Stale</Badge>
               ) : (
                 <Badge variant="default" size="sm">Stopped</Badge>
               )}
@@ -158,7 +152,6 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
                 { label: "Cert", ok: status?.certExists },
                 { label: "Trusted", ok: status?.certTrusted },
                 { label: "Server", ok: isRunning },
-                { label: "Health", ok: healthOk },
               ].map(({ label, ok }) => (
                 <span key={label} className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded ${ok ? "text-green-600" : "text-text-muted"}`}>
                   <span className="material-symbols-outlined text-[12px]">
@@ -168,41 +161,6 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
                 </span>
               ))}
             </div>
-          </div>
-
-          <div className={`rounded-md border px-2 py-1.5 text-[11px] ${
-            healthOk
-              ? "border-green-500/20 bg-green-500/5 text-green-700"
-              : healthStale
-                ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-700"
-                : "border-border bg-surface/50 text-text-muted"
-          }`} data-i18n-skip="true">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[13px]">
-                  {healthOk ? "check_circle" : healthStale ? "warning" : "cancel"}
-                </span>
-                Health: {healthLabel}
-              </span>
-              <span>Endpoint: https://openrouter.ai/_mitm_health</span>
-              {status?.health?.pid && <span>Health PID: {status.health.pid}</span>}
-              {status?.pid && <span>Tracked PID: {status.pid}</span>}
-            </div>
-            {healthStale && (
-              <div className="mt-1 text-[10px]">
-                DNS or PID state may still be active, but the MITM health endpoint is not reachable. Restart the server.
-              </div>
-            )}
-          </div>
-
-          {/* Purpose & How it works */}
-          <div className="px-2 py-2 rounded-lg bg-surface/50 border border-border/50 flex flex-col gap-2">
-            <p className="text-[11px] text-text-muted leading-relaxed">
-              <span className="font-medium text-text-main">Purpose:</span> Use Antigravity IDE & GitHub Copilot with any provider/model from {APP_CONFIG.displayName}
-            </p>
-            <p className="text-[11px] text-text-muted leading-relaxed">
-              <span className="font-medium text-text-main">How it works:</span> Antigravity/Copilot IDE request to localhost:443, MITM intercepts, {APP_CONFIG.displayName} routes, then returns the response.
-            </p>
           </div>
 
           {/* Base URL + API Key — same row pattern as Claude Code / cli-tools */}

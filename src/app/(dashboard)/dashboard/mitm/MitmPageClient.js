@@ -93,7 +93,7 @@ export default function MitmPageClient() {
             tool={tool}
             isExpanded={expandedTool === toolId}
             onToggle={() => setExpandedTool(expandedTool === toolId ? null : toolId)}
-            serverRunning={mitmStatus.health?.ok === true}
+            serverRunning={mitmStatus.running}
             dnsActive={mitmStatus.dnsStatus?.[toolId] || false}
             hasCachedPassword={mitmStatus.hasCachedPassword || false}
             needsSudoPassword={mitmStatus.needsSudoPassword !== false}
