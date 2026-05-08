@@ -416,7 +416,7 @@ export async function createProviderConnection(data) {
   const optionalFields = [
     "displayName", "email", "globalPriority", "defaultModel",
     "accessToken", "refreshToken", "expiresAt", "tokenType",
-    "scope", "projectId", "apiKey", "testStatus",
+    "scope", "projectId", "apiKey", "idToken", "testStatus",
     "lastTested", "lastError", "lastErrorAt", "rateLimitedUntil", "expiresIn", "errorCode",
     "consecutiveUseCount"
   ];

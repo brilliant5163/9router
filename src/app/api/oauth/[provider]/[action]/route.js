@@ -4,8 +4,9 @@ import {
   generateAuthData, 
   exchangeTokens, 
   requestDeviceCode, 
-  pollForToken 
+  pollForToken,
 } from "@/lib/oauth/providers";
+import { mapCodexSessionToConnection } from "@/lib/oauth/utils/codexSession";
 import { createProviderConnection } from "@/models";
 import {
   startCodexProxy,
@@ -222,6 +223,26 @@ export async function POST(request, { params }) {
         error: result.error,
         errorDescription: result.errorDescription,
         pending: isPending,
+      });
+    }
+
+    if (action === "session") {
+      if (provider !== "codex") {
+        return NextResponse.json({ error: "Session import only supported for codex" }, { status: 400 });
+      }
+
+      const sessionPayload = body.sessionJson ?? body.session;
+      const connectionPayload = mapCodexSessionToConnection(sessionPayload);
+      const connection = await createProviderConnection(connectionPayload);
+
+      return NextResponse.json({
+        success: true,
+        connection: {
+          id: connection.id,
+          provider: connection.provider,
+          email: connection.email,
+          displayName: connection.displayName,
+        },
       });
     }
 

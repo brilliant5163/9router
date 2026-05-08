@@ -5,6 +5,7 @@ const DEFAULT_LOCAL_ROUTER = "http://localhost:20128";
 const ROUTER_BASE = String(process.env.MITM_ROUTER_BASE || DEFAULT_LOCAL_ROUTER)
   .trim()
   .replace(/\/+$/, "") || DEFAULT_LOCAL_ROUTER;
+const API_KEY = process.env.ROUTER_API_KEY;
 
 const STRIP_HEADERS = new Set([
   "host", "content-length", "connection", "transfer-encoding",
@@ -39,6 +40,8 @@ function collectForwardHeaders(clientHeaders = {}, hasJsonBody = false) {
   for (const [k, v] of Object.entries(clientHeaders)) {
     if (!STRIP_HEADERS.has(k.toLowerCase())) forwarded[k] = v;
   }
+  const hasAuth = Object.keys(forwarded).some((key) => key.toLowerCase() === "authorization");
+  if (!hasAuth && API_KEY) forwarded.Authorization = `Bearer ${API_KEY}`;
   if (hasJsonBody) forwarded["Content-Type"] = "application/json";
   return forwarded;
 }

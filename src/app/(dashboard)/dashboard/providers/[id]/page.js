@@ -27,6 +27,11 @@ export default function ProviderDetailPage() {
   const [proxyPools, setProxyPools] = useState([]);
   const [showOAuthModal, setShowOAuthModal] = useState(false);
   const [showIFlowCookieModal, setShowIFlowCookieModal] = useState(false);
+  const [showCodexLoginMethodModal, setShowCodexLoginMethodModal] = useState(false);
+  const [showCodexSessionModal, setShowCodexSessionModal] = useState(false);
+  const [codexSessionJson, setCodexSessionJson] = useState("");
+  const [codexSessionError, setCodexSessionError] = useState("");
+  const [codexSessionSaving, setCodexSessionSaving] = useState(false);
   const [showAddApiKeyModal, setShowAddApiKeyModal] = useState(false);
   const [addConnectionError, setAddConnectionError] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
@@ -357,6 +362,54 @@ export default function ProviderDetailPage() {
   const handleIFlowCookieSuccess = () => {
     fetchConnections();
     setShowIFlowCookieModal(false);
+  };
+
+  const openAddConnection = () => {
+    if (isOAuth) {
+      if (providerId === "codex") {
+        setShowCodexLoginMethodModal(true);
+        return;
+      }
+      setShowOAuthModal(true);
+      return;
+    }
+    setAddConnectionError("");
+    setShowAddApiKeyModal(true);
+  };
+
+  const openCodexOAuth = () => {
+    setShowCodexLoginMethodModal(false);
+    setShowOAuthModal(true);
+  };
+
+  const openCodexSession = () => {
+    setCodexSessionError("");
+    setCodexSessionJson("");
+    setShowCodexLoginMethodModal(false);
+    setShowCodexSessionModal(true);
+  };
+
+  const handleCodexSessionConnect = async () => {
+    setCodexSessionError("");
+    setCodexSessionSaving(true);
+    try {
+      const res = await fetch("/api/oauth/codex/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionJson: codexSessionJson }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to connect Codex session");
+      }
+      await fetchConnections();
+      setShowCodexSessionModal(false);
+      setCodexSessionJson("");
+    } catch (error) {
+      setCodexSessionError(error.message || "Failed to connect Codex session");
+    } finally {
+      setCodexSessionSaving(false);
+    }
   };
 
   const handleSaveApiKey = async (formData) => {
@@ -1053,14 +1106,7 @@ export default function ProviderDetailPage() {
                 <Button
                   size="sm"
                   icon="add"
-                  onClick={() => {
-                    if (isOAuth) {
-                      setShowOAuthModal(true);
-                      return;
-                    }
-                    setAddConnectionError("");
-                    setShowAddApiKeyModal(true);
-                  }}
+                  onClick={openAddConnection}
                 >
                   {isCompatible ? "Add API Key" : (providerId === "iflow" ? "OAuth" : "Add Connection")}
                 </Button>
@@ -1086,14 +1132,7 @@ export default function ProviderDetailPage() {
                   <Button
                     size="sm"
                     icon="add"
-                    onClick={() => {
-                      if (isOAuth) {
-                        setShowOAuthModal(true);
-                        return;
-                      }
-                      setAddConnectionError("");
-                      setShowAddApiKeyModal(true);
-                    }}
+                    onClick={openAddConnection}
                     className="w-full sm:w-auto"
                   >
                     Add
@@ -1142,6 +1181,90 @@ export default function ProviderDetailPage() {
       {bulkActionModal}
 
       {/* Modals */}
+      <Modal
+        isOpen={showCodexLoginMethodModal}
+        onClose={() => setShowCodexLoginMethodModal(false)}
+        title="Add Codex"
+      >
+        <div className="flex flex-col gap-3">
+          <p className="text-sm text-text-muted">Choose a login method for your Codex connection.</p>
+          <button
+            type="button"
+            onClick={openCodexOAuth}
+            className="flex items-start gap-3 rounded-lg border border-border p-4 text-left transition-colors hover:border-primary/60 hover:bg-primary/5"
+          >
+            <span className="material-symbols-outlined text-primary">lock</span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-text-main">OAuth</span>
+              <span className="mt-1 block text-xs text-text-muted">Open the Codex OAuth authorization flow with the local callback.</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={openCodexSession}
+            className="flex items-start gap-3 rounded-lg border border-border p-4 text-left transition-colors hover:border-primary/60 hover:bg-primary/5"
+          >
+            <span className="material-symbols-outlined text-primary">data_object</span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-text-main">Session</span>
+              <span className="mt-1 block text-xs text-text-muted">Paste the JSON response from your logged-in ChatGPT session.</span>
+            </span>
+          </button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showCodexSessionModal}
+        onClose={() => {
+          if (codexSessionSaving) return;
+          setShowCodexSessionModal(false);
+          setCodexSessionError("");
+        }}
+        title="Connect Codex Session"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-700 dark:text-blue-300">
+            Visit{" "}
+            <a
+              href="https://chatgpt.com/api/auth/session"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline"
+            >
+              https://chatgpt.com/api/auth/session
+            </a>{" "}
+            and paste the JSON response below.
+          </div>
+          <textarea
+            value={codexSessionJson}
+            onChange={(event) => setCodexSessionJson(event.target.value)}
+            placeholder='{"user":{"email":"you@example.com"},"accessToken":"...","expires":"..."}'
+            rows={8}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs text-text-main outline-none transition-colors focus:border-primary"
+          />
+          {codexSessionError && (
+            <p className="text-xs text-red-500 break-words">{codexSessionError}</p>
+          )}
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCodexSessionConnect}
+              disabled={codexSessionSaving || !codexSessionJson.trim()}
+              fullWidth
+            >
+              {codexSessionSaving ? "Connecting..." : "Connect"}
+            </Button>
+            <Button
+              onClick={() => setShowCodexSessionModal(false)}
+              disabled={codexSessionSaving}
+              variant="ghost"
+              fullWidth
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       {providerId === "kiro" ? (
         <KiroOAuthWrapper
           isOpen={showOAuthModal}

@@ -19,6 +19,16 @@ function loadCommonJs(relativePath, requireStub = () => ({})) {
   return cjsModule.exports;
 }
 
+function loadCommonJsWithEnv(relativePath, env, requireStub = () => ({})) {
+  const originalEnv = process.env;
+  process.env = { ...originalEnv, ...env };
+  try {
+    return loadCommonJs(relativePath, requireStub);
+  } finally {
+    process.env = originalEnv;
+  }
+}
+
 const mitmConfig = loadCommonJs("src/mitm/config.js");
 const { TOOL_HOSTS } = loadCommonJs("src/shared/constants/mitmToolHosts.js");
 const openrouterHandler = loadCommonJs("src/mitm/handlers/openrouter.js", (id) => {
@@ -27,6 +37,14 @@ const openrouterHandler = loadCommonJs("src/mitm/handlers/openrouter.js", (id) =
   if (id === "./base") return { fetchRouter: async () => ({}), pipeSSE: async () => {} };
   throw new Error(`Unexpected require: ${id}`);
 });
+
+function loadOpenRouterHandler(env = {}) {
+  return loadCommonJsWithEnv("src/mitm/handlers/openrouter.js", env, (id) => {
+    if (id === "../logger") return { err: () => {} };
+    if (id === "../../shared/constants/brand.cjs") return { BRAND: { displayName: "9RouterX" } };
+    throw new Error(`Unexpected require: ${id}`);
+  });
+}
 
 describe("OpenRouter MITM wiring", () => {
   it("maps openrouter.ai to the openrouter MITM tool", () => {
@@ -70,6 +88,19 @@ describe("OpenRouter MITM wiring", () => {
       "user-agent": "curl",
     }, true)).toEqual({
       authorization: "Bearer sk-9router",
+      "user-agent": "curl",
+      "Content-Type": "application/json",
+    });
+  });
+
+  it("injects the MITM router API key when the client omits Authorization", () => {
+    const handler = loadOpenRouterHandler({ ROUTER_API_KEY: "sk_9routerx" });
+    expect(handler.collectForwardHeaders({
+      host: "openrouter.ai",
+      "content-length": "123",
+      "user-agent": "curl",
+    }, true)).toEqual({
+      Authorization: "Bearer sk_9routerx",
       "user-agent": "curl",
       "Content-Type": "application/json",
     });
