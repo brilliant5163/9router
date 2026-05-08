@@ -6,7 +6,6 @@ const os = require("node:os");
 const path = require("node:path");
 const net = require("node:net");
 const readline = require("node:readline");
-const { ensureStandaloneRuntime } = require("../lib/cli/standaloneRuntime");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
 const DEFAULT_PORT = "20128";
@@ -243,7 +242,6 @@ function resolveServerCommand() {
 
   const standaloneServer = path.join(ROOT_DIR, ".next", "standalone", "server.js");
   if (fs.existsSync(standaloneServer)) {
-    ensureStandaloneRuntime(ROOT_DIR);
     return { cmd: process.execPath, args: [standaloneServer], cwd: ROOT_DIR, dev: false };
   }
 

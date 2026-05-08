@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  outputFileTracingIncludes: {
+    "/*": ["./src/mitm/**/*"],
+  },
   serverExternalPackages: ["better-sqlite3"],
   images: {
     unoptimized: true
