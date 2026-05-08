@@ -42,11 +42,9 @@ export const MITM_TOOLS = {
     configType: "mitm",
     mitmDomain: "openrouter.ai",
     defaultModels: [
-      { id: "openai/gpt-4o-mini", name: "GPT-4o Mini", alias: "openai/gpt-4o-mini" },
-      { id: "openai/gpt-4o", name: "GPT-4o", alias: "openai/gpt-4o" },
-      { id: "anthropic/claude-sonnet-4.5", name: "Claude Sonnet 4.5", alias: "anthropic/claude-sonnet-4.5" },
-      { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro", alias: "google/gemini-2.5-pro" },
-      { id: "deepseek/deepseek-chat-v3.1", name: "DeepSeek Chat V3.1", alias: "deepseek/deepseek-chat-v3.1" },
+      { id: "openai/gpt-5.5", name: "GPT-5.5", alias: "openai/gpt-5.5" },
+      { id: "anthropic/claude-sonnet-4.6", name: "Claude Sonnet 4.6", alias: "anthropic/claude-sonnet-4.6" },
+      { id: "google/gemini-3.1-pro", name: "Gemini 3.1 Pro", alias: "google/gemini-3.1-pro" },
     ],
   },
   kiro: {
