@@ -14,10 +14,26 @@ function isCertExpired(certPath) {
   try {
     const cert = forge.pki.certificateFromPem(fs.readFileSync(certPath, "utf8"));
     const expiryThreshold = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    return cert.validity.notAfter < expiryThreshold;
+    return cert.validity.notAfter < expiryThreshold || !isCertForCurrentBrand(cert);
   } catch {
     return true; // treat unreadable cert as expired
   }
+}
+
+function getAttributeValue(attributes, name) {
+  return attributes.find((attr) => attr.name === name)?.value;
+}
+
+function isCertForCurrentBrand(cert) {
+  const subjectCN = getAttributeValue(cert.subject.attributes, "commonName");
+  const subjectOrg = getAttributeValue(cert.subject.attributes, "organizationName");
+  const issuerCN = getAttributeValue(cert.issuer.attributes, "commonName");
+  const issuerOrg = getAttributeValue(cert.issuer.attributes, "organizationName");
+
+  return subjectCN === BRAND.mitmRootCACommonName
+    && issuerCN === BRAND.mitmRootCACommonName
+    && subjectOrg === BRAND.mitmRootCAOrganization
+    && issuerOrg === BRAND.mitmRootCAOrganization;
 }
 
 /**
