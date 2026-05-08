@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 
-const { spawn } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const net = require("node:net");
-const { ensureStandaloneAssets } = require("./standaloneAssets");
+const readline = require("node:readline");
+const { ensureStandaloneRuntime } = require("../lib/cli/standaloneRuntime");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
 const DEFAULT_PORT = "20128";
 const DEFAULT_HOST = "0.0.0.0";
 const BRAND_NAME = "9RouterX";
 const APP_DATA_DIR_NAME = "9routerx";
+const PORT_KILL_WAIT_MS = 2000;
 
 function getDefaultDataDir() {
   if (process.platform === "win32") {
@@ -43,7 +45,7 @@ function readPackage() {
 function parseArgs(argv = process.argv.slice(2), env = process.env) {
   const options = {
     command: "start",
-    host: env.HOSTNAME || DEFAULT_HOST,
+    host: env.HOST || DEFAULT_HOST,
     port: env.PORT || DEFAULT_PORT,
     dataDir: env.DATA_DIR || getDefaultDataDir(),
     foreground: false,
@@ -90,6 +92,14 @@ function parseArgs(argv = process.argv.slice(2), env = process.env) {
   }
 
   return options;
+}
+
+function normalizePort(port) {
+  const normalized = Number(port);
+  if (!Number.isInteger(normalized) || normalized < 1 || normalized > 65535) {
+    throw new Error(`Invalid port: ${port}`);
+  }
+  return String(normalized);
 }
 
 function formatHelp() {
@@ -233,7 +243,7 @@ function resolveServerCommand() {
 
   const standaloneServer = path.join(ROOT_DIR, ".next", "standalone", "server.js");
   if (fs.existsSync(standaloneServer)) {
-    ensureStandaloneAssets(ROOT_DIR);
+    ensureStandaloneRuntime(ROOT_DIR);
     return { cmd: process.execPath, args: [standaloneServer], cwd: ROOT_DIR, dev: false };
   }
 
@@ -280,6 +290,64 @@ function checkPortAvailable(port, host) {
   });
 }
 
+function getPortPids(port) {
+  if (process.platform === "win32") return [];
+
+  const result = spawnSync("lsof", ["-ti", `tcp:${port}`, "-sTCP:LISTEN"], { encoding: "utf8" });
+  if (result.error || result.status > 1) return [];
+
+  return result.stdout
+    .split(/\s+/)
+    .map((pid) => Number(pid))
+    .filter((pid) => Number.isInteger(pid) && pid > 0 && pid !== process.pid);
+}
+
+function promptYesNo(question) {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) return Promise.resolve(false);
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(`${question} [y/N] `, (answer) => {
+      rl.close();
+      resolve(["y", "yes"].includes(answer.trim().toLowerCase()));
+    });
+  });
+}
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function killPortPids(port) {
+  const pids = getPortPids(port);
+  if (pids.length === 0) return false;
+
+  for (const pid of pids) {
+    try {
+      process.kill(pid, "SIGTERM");
+    } catch {}
+  }
+
+  const deadline = Date.now() + PORT_KILL_WAIT_MS;
+  while (Date.now() < deadline) {
+    const stillRunning = pids.some((pid) => isProcessRunning(pid));
+    if (!stillRunning) return true;
+    await delay(100);
+  }
+
+  for (const pid of pids) {
+    if (!isProcessRunning(pid)) continue;
+    try {
+      process.kill(pid, "SIGKILL");
+    } catch {}
+  }
+
+  await delay(100);
+  return pids.every((pid) => !isProcessRunning(pid));
+}
+
 function createLogFileDescriptors(paths) {
   ensureDataDir(paths.dataDir);
   fs.appendFileSync(paths.logFile, `\n[${new Date().toISOString()}] Starting ${BRAND_NAME}\n`);
@@ -300,7 +368,7 @@ function closeLogFileDescriptors(stdio) {
 
 function getPortConflictMessage(port) {
   return [
-    `Port ${port} is already in use by an existing ${BRAND_NAME} instance.`,
+    `Port ${port} is already in use.`,
     `Use 9routerx --port <new-port> to run on a different port.`,
   ].join("\n");
 }
@@ -353,7 +421,13 @@ async function runCli(argv = process.argv.slice(2), env = process.env) {
     stopServer(paths);
   }
 
-  const port = String(options.port);
+  let port;
+  try {
+    port = normalizePort(options.port);
+  } catch (error) {
+    console.error(error.message);
+    return 1;
+  }
   const host = options.host || DEFAULT_HOST;
   const baseUrl = env.NEXT_PUBLIC_BASE_URL || `http://localhost:${port}`;
   const dashboardUrl = `${baseUrl}/dashboard`;
@@ -366,7 +440,27 @@ async function runCli(argv = process.argv.slice(2), env = process.env) {
     return 0;
   }
 
-  const available = await checkPortAvailable(port, host);
+  let available = await checkPortAvailable(port, host);
+  if (!available) {
+    const pids = getPortPids(port);
+    if (pids.length > 0) {
+      console.error(`Port ${port} is already in use by PID(s): ${pids.join(", ")}`);
+      const shouldKill = await promptYesNo(`Kill process(es) using port ${port} and continue?`);
+      if (!shouldKill) return 1;
+
+      const killed = await killPortPids(port);
+      if (!killed) {
+        console.error(`Failed to free port ${port}.`);
+        return 1;
+      }
+
+      available = await checkPortAvailable(port, host);
+      if (available) {
+        console.log(`Port ${port} is free. Continuing...`);
+      }
+    }
+  }
+
   if (!available) {
     console.error(getPortConflictMessage(port));
     return 1;
@@ -461,6 +555,9 @@ module.exports = {
   getRuntimePaths,
   formatHelp,
   getPortConflictMessage,
+  normalizePort,
+  getPortPids,
+  killPortPids,
   isProcessRunning,
   printStatus,
   stopServer,

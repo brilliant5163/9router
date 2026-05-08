@@ -4,9 +4,9 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { ensureStandaloneAssets } from "../../bin/standaloneAssets.js";
+import { ensureStandaloneRuntime } from "../../lib/cli/standaloneRuntime.js";
 
-describe("ensureStandaloneAssets", () => {
+describe("ensureStandaloneRuntime", () => {
   test("copies Next static and public assets beside standalone server", () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), "9router-standalone-assets-"));
 
@@ -17,7 +17,7 @@ describe("ensureStandaloneAssets", () => {
       writeFileSync(path.join(rootDir, ".next", "static", "chunks", "app.js"), "chunk");
       writeFileSync(path.join(rootDir, "public", "providers", "codex.png"), "image");
 
-      ensureStandaloneAssets(rootDir);
+      ensureStandaloneRuntime(rootDir);
 
       assert.equal(
         readFileSync(

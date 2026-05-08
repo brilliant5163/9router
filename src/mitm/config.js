@@ -12,7 +12,7 @@ const TARGET_HOSTS = [
 const URL_PATTERNS = {
   antigravity: [":generateContent", ":streamGenerateContent"],
   copilot: ["/chat/completions", "/v1/messages", "/responses"],
-  openrouter: ["/api/v1/chat/completions", "/v1/chat/completions", "/api/v1/responses", "/v1/responses", "/api/v1/models", "/v1/models", "/api/v1/key", "/api/v1/auth/key"],
+  openrouter: ["/api/v1/chat/completions", "/v1/chat/completions", "/chat/completions", "/api/v1/responses", "/v1/responses", "/responses", "/api/v1/messages", "/v1/messages", "/api/v1/models", "/v1/models", "/api/v1/key", "/api/v1/auth/key"],
   kiro: ["/generateAssistantResponse"],
   cursor: ["/BidiAppend", "/RunSSE", "/RunPoll", "/Run"],
 };

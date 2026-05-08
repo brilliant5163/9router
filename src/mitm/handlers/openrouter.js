@@ -1,3 +1,5 @@
+const fs = require("node:fs");
+const path = require("node:path");
 const { err } = require("../logger");
 const { BRAND } = require("../../shared/constants/brand.cjs");
 
@@ -14,8 +16,12 @@ const STRIP_HEADERS = new Set([
 const URL_MAP = {
   "/api/v1/chat/completions": "/v1/chat/completions",
   "/v1/chat/completions": "/v1/chat/completions",
+  "/chat/completions": "/v1/chat/completions",
   "/api/v1/responses": "/v1/responses",
   "/v1/responses": "/v1/responses",
+  "/responses": "/v1/responses",
+  "/api/v1/messages": "/v1/messages",
+  "/v1/messages": "/v1/messages",
   "/api/v1/models": "/v1/models",
   "/v1/models": "/v1/models",
 };
@@ -30,9 +36,93 @@ function resolveRouterPath(reqUrl) {
   return "/v1/chat/completions";
 }
 
-function rewriteModel(body, mappedModel) {
-  if (!mappedModel) return body;
-  return { ...body, model: mappedModel };
+function isModelsRequest(reqUrl) {
+  const pathname = String(reqUrl || "").split("?")[0];
+  return pathname === "/api/v1/models" || pathname === "/v1/models";
+}
+
+function getLocalModelsPayload() {
+  const modelsPath = path.join(__dirname, "..", "models.json");
+  return fs.readFileSync(modelsPath, "utf8");
+}
+
+function sendJsonPayload(res, payload, cacheControl = "public, max-age=300") {
+  if (res.writableEnded) return;
+  res.writeHead(200, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": cacheControl,
+    "Content-Length": Buffer.byteLength(payload),
+  });
+  res.end(payload);
+}
+
+function buildInjectedModel(publicModelId) {
+  const [provider = "openrouter"] = String(publicModelId || "").split("/");
+  return {
+    id: publicModelId,
+    canonical_slug: publicModelId,
+    name: publicModelId,
+    created: 0,
+    description: `${BRAND.displayName} MITM mapped model`,
+    architecture: {
+      modality: "text->text",
+      input_modalities: ["text"],
+      output_modalities: ["text"],
+      tokenizer: "unknown",
+      instruct_type: null,
+    },
+    top_provider: {
+      is_moderated: false,
+    },
+    pricing: {
+      prompt: "0",
+      completion: "0",
+      image: "0",
+      request: "0",
+      web_search: "0",
+      internal_reasoning: "0",
+    },
+    per_request_limits: null,
+    context_length: 128000,
+    hugging_face_id: null,
+    supported_parameters: ["max_tokens", "temperature", "top_p", "stream", "stop"],
+    provider,
+  };
+}
+
+function injectPublicModels(payload, aliasMappings = {}) {
+  const normalized = payload && typeof payload === "object" ? payload : {};
+  const currentData = Array.isArray(normalized.data) ? normalized.data : [];
+  const existingIds = new Set(currentData.map((item) => item?.id).filter(Boolean));
+  const injected = Object.keys(aliasMappings)
+    .filter(Boolean)
+    .filter((publicId) => !existingIds.has(publicId))
+    .map(buildInjectedModel);
+
+  return {
+    ...normalized,
+    data: [...currentData, ...injected],
+  };
+}
+
+async function handleModelsRequest(res, aliasMappings = {}) {
+  try {
+    const payload = getLocalModelsPayload();
+    const parsed = JSON.parse(payload);
+    sendJsonPayload(res, JSON.stringify(injectPublicModels(parsed, aliasMappings)));
+  } catch (error) {
+    err(`[openrouter] local models response failed: ${error.message}`);
+    if (!res.headersSent) res.writeHead(500, { "Content-Type": "application/json" });
+    if (!res.writableEnded) res.end(JSON.stringify({ error: { message: error.message, type: "mitm_error" } }));
+  }
+}
+
+function rewriteModel(body, mappedModel, aliasMappings = {}) {
+  const aliasModel = body?.model ? aliasMappings[body.model] : null;
+  const resolvedModel = mappedModel || aliasModel;
+  if (!resolvedModel) return body;
+  return { ...body, model: resolvedModel };
 }
 
 function collectForwardHeaders(clientHeaders = {}, hasJsonBody = false) {
@@ -108,7 +198,7 @@ function sendKeyInfo(res) {
   }));
 }
 
-async function intercept(req, res, bodyBuffer, mappedModel, passthrough) {
+async function intercept(req, res, bodyBuffer, mappedModel, passthrough, aliasMappings = {}) {
   try {
     if (req.method === "OPTIONS") {
       res.writeHead(204, {
@@ -125,11 +215,16 @@ async function intercept(req, res, bodyBuffer, mappedModel, passthrough) {
       return;
     }
 
+    if (req.method === "GET" && isModelsRequest(req.url)) {
+      await handleModelsRequest(res, aliasMappings);
+      return;
+    }
+
     const routerPath = resolveRouterPath(req.url);
     let forwardBody = bodyBuffer;
 
     if (bodyBuffer.length > 0 && req.headers["content-type"]?.includes("application/json")) {
-      const body = rewriteModel(JSON.parse(bodyBuffer.toString()), mappedModel);
+      const body = rewriteModel(JSON.parse(bodyBuffer.toString()), mappedModel, aliasMappings);
       forwardBody = Buffer.from(JSON.stringify(body));
     }
 
@@ -145,4 +240,13 @@ async function intercept(req, res, bodyBuffer, mappedModel, passthrough) {
   }
 }
 
-module.exports = { intercept, resolveRouterPath, rewriteModel, collectForwardHeaders, isKeyInfoRequest };
+module.exports = {
+  intercept,
+  resolveRouterPath,
+  rewriteModel,
+  collectForwardHeaders,
+  isKeyInfoRequest,
+  isModelsRequest,
+  buildInjectedModel,
+  injectPublicModels,
+};

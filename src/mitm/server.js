@@ -122,6 +122,15 @@ function getMappedModel(tool, model) {
   } catch { return null; }
 }
 
+function getAliasMappings(tool) {
+  try {
+    if (!fs.existsSync(DB_FILE)) return {};
+    const db = JSON.parse(fs.readFileSync(DB_FILE, "utf-8"));
+    const aliases = db.mitmAlias?.[tool];
+    return aliases && typeof aliases === "object" ? aliases : {};
+  } catch { return {}; }
+}
+
 /**
  * Forward request to real upstream.
  * Optional onResponse(rawBuffer) callback — if provided, tees the response
@@ -210,7 +219,7 @@ const server = https.createServer(sslOptions, async (req, res) => {
     const model = extractModel(req.url, bodyBuffer);
     const mappedModel = getMappedModel(tool, model);
     if (tool === "openrouter") {
-      return handlers[tool].intercept(req, res, bodyBuffer, mappedModel, passthrough);
+      return handlers[tool].intercept(req, res, bodyBuffer, mappedModel, passthrough, getAliasMappings(tool));
     }
     if (!mappedModel) {
       return passthrough(req, res, bodyBuffer);

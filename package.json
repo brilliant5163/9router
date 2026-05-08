@@ -8,6 +8,7 @@
   },
   "files": [
     "bin",
+    "lib/cli",
     ".next/standalone",
     "!.next/standalone/.env",
     ".next/static",
