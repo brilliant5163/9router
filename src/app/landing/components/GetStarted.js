@@ -84,8 +84,8 @@ export default function GetStarted() {
                 
                 <div className="text-gray-400 text-xs">
                   <span className="text-purple-400">Data Location:</span><br/>
-                  <span className="text-gray-500">  macOS/Linux:</span> ~/.9routerx/db.json<br/>
-                  <span className="text-gray-500">  Windows:</span> %APPDATA%/9routerx/db.json
+                  <span className="text-gray-500">  macOS/Linux:</span> ~/.9routerx/db/data.sqlite<br/>
+                  <span className="text-gray-500">  Windows:</span> %APPDATA%/9routerx/db/data.sqlite
                 </div>
               </div>
             </div>

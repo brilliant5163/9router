@@ -1,6 +1,6 @@
-/* ========== CLOUD SYNC — COMMENTED OUT (replaced by Tunnel) ==========
+/* CLOUD SYNC COMMENTED OUT (replaced by Tunnel)
 import { getCloudSyncScheduler } from "@/shared/services/cloudSyncScheduler";
-========== END CLOUD SYNC ========== */
+END CLOUD SYNC */
 import { cleanupProviderConnections } from "@/lib/localDb";
 
 /**
@@ -12,7 +12,7 @@ export async function initializeCloudSync() {
     // Cleanup null fields from existing data
     await cleanupProviderConnections();
     
-    /* ========== CLOUD SYNC — COMMENTED OUT (replaced by Tunnel) ==========
+    /* CLOUD SYNC COMMENTED OUT (replaced by Tunnel)
     // Create scheduler instance with default 15-minute interval
     const scheduler = await getCloudSyncScheduler(null, 15);
     
@@ -20,7 +20,7 @@ export async function initializeCloudSync() {
     await scheduler.start();
     
     return scheduler;
-    ========== END CLOUD SYNC ========== */
+    END CLOUD SYNC */
     return null;
   } catch (error) {
     console.error("[CloudSync] Error initializing scheduler:", error);
@@ -34,4 +34,3 @@ if (typeof require !== "undefined" && require.main === module) {
 }
 
 export default initializeCloudSync;
-

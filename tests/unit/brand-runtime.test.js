@@ -94,7 +94,7 @@ describe("9RouterX runtime branding", () => {
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, "package.json"), "utf8"));
     expect(pkg.name).toBe("9routerx");
     expect(pkg.private).toBe(false);
-    expect(pkg.bin).toEqual({ "9routerx": "./bin/cli.js" });
+    expect(pkg.bin).toEqual({ "9routerx": "bin/cli.js" });
     expect(fs.readFileSync(path.join(ROOT_DIR, "bin/cli.js"), "utf8")).toMatch(/^#!\/usr\/bin\/env node/);
   });
 
